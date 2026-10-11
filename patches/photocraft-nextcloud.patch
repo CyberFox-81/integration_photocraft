@@ -224,7 +224,7 @@ index 5ba75f5..b69e045 100644
  mod web;
  
 diff --git a/apps/photocraft-web/src/web.rs b/apps/photocraft-web/src/web.rs
-index 21c55a8..f788bb5 100644
+index da2ee9a..21cb452 100644
 --- a/apps/photocraft-web/src/web.rs
 +++ b/apps/photocraft-web/src/web.rs
 @@ -72,6 +72,10 @@ pub fn start() {

@@ -13,7 +13,8 @@
  *   page → PhotoCraft   photocraft:file       { path, blob | error } one of them
  *   PhotoCraft → page   photocraft:pick-save  { id, name } Save As or Export asks where to save (optional)
  *   page → PhotoCraft   photocraft:picked     { id, path } the answer (no path: cancelled)
- *   PhotoCraft → page   photocraft:save       { name, bytes } Save (name) or Save As/Export (path)
+ *   PhotoCraft → page   photocraft:save       { name, bytes, quiet? } Save (name) or Save As/Export (path);
+ *                                       quiet: a file saved along with the image (its media)
  *   PhotoCraft → page   photocraft:dirty      { dirty } unsaved changes appeared or went away
  *   PhotoCraft → page   photocraft:failed     { error } the app couldn't start
  *
@@ -49,6 +50,8 @@ interface Urls {
 interface Unsaved {
 	name: string
 	bytes: ArrayBuffer
+	/** Saved along with the image (such as its media): no notice of its own. */
+	quiet?: boolean
 }
 
 class HttpError extends Error {
@@ -169,7 +172,7 @@ window.addEventListener('message', (event: MessageEvent) => {
 		break
 	case 'photocraft:save':
 		if (message.bytes instanceof ArrayBuffer) {
-			queueSave({ name: String(message.name ?? file.name), bytes: message.bytes })
+			queueSave({ name: String(message.name ?? file.name), bytes: message.bytes, quiet: message.quiet === true })
 		}
 		break
 	case 'photocraft:need':
@@ -335,7 +338,9 @@ async function uploadPicked(save: Unsaved, path: string): Promise<void> {
 		await finishUpload(save, path, await put(path, save.bytes, {}))
 		return
 	}
-	await uploadNew(save, path)
+	// A path PhotoCraft chose itself (not picked here) for its own format is where the image
+	// lives from now on.
+	await uploadNew(save, path, choice === undefined && isDocument(path))
 }
 
 async function uploadExisting(save: Unsaved, path: string, newHome = false): Promise<void> {
@@ -423,7 +428,9 @@ async function finishUpload(save: Unsaved, path: string, response: Response, new
 			filesUrl = generateUrl('/apps/files/files/{fileId}?dir={dir}', { fileId: id, dir: dirname(path) })
 		}
 	}
-	if (path === documentPath || (plainSave && isDocument(path))) {
+	if (save.quiet) {
+		// Part of saving the image, which has its own notice.
+	} else if (path === documentPath || (plainSave && isDocument(path))) {
 		showSuccess(t('integration_photocraft', 'Saved {name} to Nextcloud', { name: basename(path) }, { escape: false }))
 	} else if (isDocument(path)) {
 		showSuccess(t('integration_photocraft', 'Saved a copy as {name}', { name: basename(path) }, { escape: false }))
@@ -433,8 +440,8 @@ async function finishUpload(save: Unsaved, path: string, response: Response, new
 	render()
 }
 
-function put(path: string, bytes: ArrayBuffer, conditions: Record<string, string>): Promise<Response> {
-	return fetch(davUrl(path), {
+async function put(path: string, bytes: ArrayBuffer, conditions: Record<string, string>): Promise<Response> {
+	const send = () => fetch(davUrl(path), {
 		method: 'PUT',
 		headers: {
 			requesttoken: getRequestToken() ?? '',
@@ -444,6 +451,30 @@ function put(path: string, bytes: ArrayBuffer, conditions: Record<string, string
 		body: bytes,
 		credentials: 'same-origin',
 	})
+	const response = await send()
+	if (response.status !== 409) {
+		return response
+	}
+	// The folder doesn't exist yet: PhotoCraft saves into a new folder (such as a project's media).
+	await createFolder(dirname(path))
+	return send()
+}
+
+/**
+ * Create a folder and the folders above it that don't exist yet.
+ *
+ * @param path - User-relative folder path
+ */
+async function createFolder(path: string): Promise<void> {
+	let folder = ''
+	for (const part of path.split('/').filter((p) => p !== '')) {
+		folder += `/${part}`
+		const response = await fetch(davUrl(folder), { method: 'MKCOL', headers: { requesttoken: getRequestToken() ?? '' }, credentials: 'same-origin' })
+		// 405: the folder exists already.
+		if (!response.ok && response.status !== 405) {
+			throw new HttpError(response.status)
+		}
+	}
 }
 
 async function currentEtag(path: string): Promise<string | null> {

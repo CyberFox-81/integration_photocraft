@@ -23,7 +23,7 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PHOTOCRAFT_REF="${PHOTOCRAFT_REF:-953390a36ef59c6ca04c5850b5b5d9d0dd9e625a}"
+PHOTOCRAFT_REF="${PHOTOCRAFT_REF:-20dab123fbf3af71c226ff0abbbd72c3479d4b42}"
 SRC="${1:-$APP_DIR/build/photocraft}"
 PATCH="$APP_DIR/patches/photocraft-nextcloud.patch"
 OUT="$APP_DIR/web"
