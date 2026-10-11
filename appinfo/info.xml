@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+  - SPDX-FileCopyrightText: 2026 Britton Couchman <brittondcouchman@gmail.com>
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>integration_photocraft</id>
+	<name>PhotoCraft integration</name>
+	<summary>Edit photos and Photoshop files in Nextcloud with PhotoCraft</summary>
+	<description><![CDATA[Open a photo or a layered image in Files with **Edit in PhotoCraft** and work on it right in the browser: layers, masks, adjustment layers, selections, brushes, retouching, filters and text, with Photoshop (PSD, PSB) files as well as PNG, JPEG, TIFF, WebP, HEIC and camera raw files.
+
+- **Save** writes a layered file (PSD, PSB, PhotoCraft) straight back to Nextcloud, which keeps the previous state as a file version. A flat image that gained layers asks for a name and folder first, as in Photoshop.
+- **Save As** and **Export** store a file in any folder you pick.
+- Read-only files open normally; saving offers a copy.
+- If someone else changes the file while you have it open, you choose whether to replace their version or save a copy.
+- Optionally, clicking an image in Files opens it in PhotoCraft instead of the viewer.
+
+PhotoCraft runs entirely in your browser as WebAssembly. Files go only between your browser and your Nextcloud, and the server needs no extra software.
+
+This is a community integration based on [PhotoCraft](https://github.com/storytold/photocraft) by the ArtCraft team, an open-source, Rust-native image editor. It embeds a build of PhotoCraft and is not made or endorsed by the ArtCraft team.
+
+**Requirements:** a browser with WebGPU or WebGL2, and a web server that serves `.wasm` files as `application/wasm` (Nextcloud's own Apache and nginx configurations do).]]></description>
+	<version>0.1.0</version>
+	<licence>agpl</licence>
+	<author mail="brittondcouchman@gmail.com" homepage="https://github.com/CyberFox-81">Britton Couchman</author>
+	<namespace>PhotoCraftIntegration</namespace>
+	<category>multimedia</category>
+	<category>files</category>
+	<category>integration</category>
+	<website>https://github.com/CyberFox-81/integration_photocraft</website>
+	<bugs>https://github.com/CyberFox-81/integration_photocraft/issues</bugs>
+	<repository type="git">https://github.com/CyberFox-81/integration_photocraft.git</repository>
+	<dependencies>
+		<nextcloud min-version="33" max-version="35"/>
+	</dependencies>
+</info>

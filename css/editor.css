@@ -1,0 +1,264 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Britton Couchman <brittondcouchman@gmail.com>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+#content.app-integration_photocraft {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+#photocraft-editor {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+	width: 100%;
+	height: 100%;
+	background: var(--color-main-background);
+}
+
+.photocraft-bar {
+	display: flex;
+	align-items: center;
+	gap: calc(var(--default-grid-baseline, 4px) * 2);
+	flex: 0 0 auto;
+	min-height: var(--default-clickable-area, 34px);
+	padding: calc(var(--default-grid-baseline, 4px) * 1.5) calc(var(--default-grid-baseline, 4px) * 3);
+	border-bottom: 1px solid var(--color-border);
+	color: var(--color-main-text);
+}
+
+.photocraft-bar__icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	width: 20px;
+	height: 20px;
+	color: var(--color-primary-element);
+}
+
+.photocraft-bar__icon svg {
+	width: 100%;
+	height: 100%;
+}
+
+.photocraft-bar__title {
+	flex: 0 1 auto;
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	font-size: var(--default-font-size, 15px);
+	font-weight: bold;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.photocraft-bar__status {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	color: var(--color-text-maxcontrast);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.photocraft-bar__status[data-state='error'] {
+	color: var(--color-error-text, var(--color-error));
+	font-weight: bold;
+}
+
+.photocraft-bar__status[data-state='readonly'] {
+	color: var(--color-warning-text, var(--color-warning));
+}
+
+.photocraft-bar__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--default-grid-baseline, 4px);
+	flex: 0 0 auto;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.photocraft-bar__toggle input {
+	margin: 0;
+	cursor: pointer;
+	accent-color: var(--color-primary-element);
+}
+
+/* Scoped by id so Nextcloud's global button styles don't win. */
+:is(#photocraft-editor, .photocraft-save) .photocraft-button {
+	flex: 0 0 auto;
+	min-height: var(--default-clickable-area, 34px);
+	margin: 0;
+	padding: 0 calc(var(--default-grid-baseline, 4px) * 4);
+	border: 1px solid var(--color-border-dark, var(--color-border));
+	border-radius: var(--border-radius-element, var(--border-radius-large, 10px));
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font: inherit;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+:is(#photocraft-editor, .photocraft-save) .photocraft-button:hover,
+:is(#photocraft-editor, .photocraft-save) .photocraft-button:focus-visible {
+	background: var(--color-background-hover);
+}
+
+:is(#photocraft-editor, .photocraft-save) .photocraft-button--primary {
+	border-color: var(--color-primary-element);
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+}
+
+:is(#photocraft-editor, .photocraft-save) .photocraft-button--primary:hover,
+:is(#photocraft-editor, .photocraft-save) .photocraft-button--primary:focus-visible {
+	background: var(--color-primary-element-hover);
+}
+
+:is(#photocraft-editor, .photocraft-save) .photocraft-button[hidden] {
+	display: none;
+}
+
+.photocraft-stage {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.photocraft-frame {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.photocraft-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: calc(var(--default-grid-baseline, 4px) * 4);
+	padding: calc(var(--default-grid-baseline, 4px) * 8);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	text-align: center;
+}
+
+.photocraft-overlay[hidden] {
+	display: none;
+}
+
+.photocraft-overlay__spinner {
+	width: 44px;
+	height: 44px;
+}
+
+.photocraft-overlay__text {
+	max-width: 60ch;
+	margin: 0;
+}
+
+.photocraft-overlay[data-error='true'] .photocraft-overlay__text {
+	color: var(--color-error-text, var(--color-error));
+}
+
+/* Save As */
+
+.photocraft-save {
+	position: fixed;
+	inset: 0;
+	width: min(480px, calc(100vw - 32px));
+	height: fit-content;
+	margin: auto;
+	padding: calc(var(--default-grid-baseline, 4px) * 6);
+	border: 0;
+	border-radius: var(--border-radius-container-large, var(--border-radius-large, 16px));
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	box-shadow: 0 0 40px var(--color-box-shadow, rgba(0, 0, 0, 0.3));
+}
+
+.photocraft-save::backdrop {
+	background: rgba(0, 0, 0, 0.4);
+}
+
+.photocraft-save form {
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--default-grid-baseline, 4px) * 3);
+}
+
+.photocraft-save__heading {
+	margin: 0;
+	font-size: 20px;
+}
+
+.photocraft-save__hint {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+}
+
+.photocraft-save__label {
+	display: flex;
+	flex-direction: column;
+	gap: var(--default-grid-baseline, 4px);
+}
+
+.photocraft-save__input {
+	width: 100%;
+	min-height: var(--default-clickable-area, 34px);
+	margin: 0;
+	padding: 0 calc(var(--default-grid-baseline, 4px) * 3);
+	border: 2px solid var(--color-border-maxcontrast);
+	border-radius: var(--border-radius-element, var(--border-radius-large, 10px));
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font: inherit;
+	box-sizing: border-box;
+}
+
+.photocraft-save__input:focus {
+	border-color: var(--color-primary-element);
+	outline: none;
+}
+
+.photocraft-save__folder {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: calc(var(--default-grid-baseline, 4px) * 2);
+}
+
+.photocraft-save__folder-path {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--color-text-maxcontrast);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.photocraft-save__error {
+	margin: 0;
+	color: var(--color-error-text, var(--color-error));
+}
+
+.photocraft-save__error:empty {
+	display: none;
+}
+
+.photocraft-save__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: calc(var(--default-grid-baseline, 4px) * 2);
+}
+
+@media (max-width: 720px) {
+	.photocraft-bar__toggle {
+		display: none;
+	}
+}
