@@ -23,7 +23,7 @@
 set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PHOTOCRAFT_REF="${PHOTOCRAFT_REF:-20dab123fbf3af71c226ff0abbbd72c3479d4b42}"
+PHOTOCRAFT_REF="${PHOTOCRAFT_REF:-92baf43103e3a79478717a20f8b904ccd6eea248}"
 SRC="${1:-$APP_DIR/build/photocraft}"
 PATCH="$APP_DIR/patches/photocraft-nextcloud.patch"
 OUT="$APP_DIR/web"
@@ -35,9 +35,12 @@ if [ ! -e "$SRC/.git" ]; then
 fi
 
 if grep -rq 'photocraft:ready' "$SRC/apps/photocraft-web/src"; then
-	echo "bridge patch already applied"
-else
+	echo "PhotoCraft has the embedding bridge"
+elif [ -s "$PATCH" ]; then
 	git -C "$SRC" apply "$PATCH"
+else
+	echo "error: this PhotoCraft has no embedding bridge, and there is no patch to add it" >&2
+	exit 1
 fi
 
 cargo_args=(build --profile wasm-release -p photocraft-web --target wasm32-unknown-unknown --features heif)

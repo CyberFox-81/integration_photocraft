@@ -69,7 +69,7 @@ let openByDefault = loadState<boolean>(APP, 'openByDefault', false)
  * Formats that keep the whole image. Saving in one of them can make that file the image's
  * file; anything else (PDF, PNG…) is an export, a copy that leaves the image where it is.
  */
-const DOCUMENT_EXTENSIONS = new Set(['.pcraft', '.psd', '.psb', '.psdt', '.tif', '.tiff', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.ora', '.exr', '.qoi', '.tga'])
+const DOCUMENT_EXTENSIONS = new Set<string>(['.pcraft', '.psd', '.psb', '.psdt', '.tif', '.tiff', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.ora', '.exr', '.qoi', '.tga'])
 
 /**
  * Where a plain Save goes, by the file name PhotoCraft saves under: the opened file's name at
@@ -452,10 +452,11 @@ async function put(path: string, bytes: ArrayBuffer, conditions: Record<string, 
 		credentials: 'same-origin',
 	})
 	const response = await send()
-	if (response.status !== 409) {
+	// 404 or 409: the folder doesn't exist yet, as when PhotoCraft saves into a new folder (such as
+	// a project's media).
+	if (response.status !== 404 && response.status !== 409) {
 		return response
 	}
-	// The folder doesn't exist yet: PhotoCraft saves into a new folder (such as a project's media).
 	await createFolder(dirname(path))
 	return send()
 }
