@@ -1,5 +1,5 @@
 diff --git a/apps/photocraft-web/Cargo.toml b/apps/photocraft-web/Cargo.toml
-index 6b4c6279..b6d63aa5 100644
+index a4ded641..c0bf2235 100644
 --- a/apps/photocraft-web/Cargo.toml
 +++ b/apps/photocraft-web/Cargo.toml
 @@ -34,7 +34,7 @@ rfd = { workspace = true }
@@ -224,7 +224,7 @@ index 5ba75f52..b69e045c 100644
  mod web;
  
 diff --git a/apps/photocraft-web/src/web.rs b/apps/photocraft-web/src/web.rs
-index 4f674560..9448c0bf 100644
+index 6c993960..27681de1 100644
 --- a/apps/photocraft-web/src/web.rs
 +++ b/apps/photocraft-web/src/web.rs
 @@ -72,6 +72,10 @@ pub fn start() {
