@@ -4,6 +4,10 @@
 -->
 # Changelog
 
+## 0.1.3 – 2026-10-11
+
+- PhotoCraft 0.7.0 (commit aba9b2b): the latest PhotoCraft, with the embedding bridge rebased onto it
+
 ## 0.1.2 – 2026-10-11
 
 - PhotoCraft 0.7.0 (commit 92baf43): the latest PhotoCraft, with the embedding bridge rebased onto it
