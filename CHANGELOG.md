@@ -4,6 +4,11 @@
 -->
 # Changelog
 
+## 0.1.6 – 2026-10-17
+
+- PhotoCraft 0.9.0 (commit 5f65579): the latest PhotoCraft, with the embedding bridge rebased onto it
+- A one-line build fix for PhotoCraft's current main, where two changes to saved presets collided and stopped it compiling (export presets are read back again)
+
 ## 0.1.5 – 2026-10-14
 
 - PhotoCraft 0.9.0 (commit 8d840ea): the latest PhotoCraft, with the embedding bridge rebased onto it

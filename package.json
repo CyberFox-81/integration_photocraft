@@ -1,6 +1,6 @@
 {
   "name": "integration_photocraft",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "description": "Edit photos and Photoshop files in Nextcloud with PhotoCraft",
   "license": "AGPL-3.0-or-later",
