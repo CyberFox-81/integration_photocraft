@@ -4,6 +4,11 @@
 -->
 # Changelog
 
+## 0.1.7 – 2026-10-21
+
+- PhotoCraft 0.12.0 (commit 6d8cbac): the latest PhotoCraft, with the embedding bridge rebased onto it
+- Saving to Nextcloud counts as saved again (PhotoCraft now treats a browser download as unconfirmed; a save handed to Nextcloud is stored)
+
 ## 0.1.6 – 2026-10-17
 
 - PhotoCraft 0.9.0 (commit 5f65579): the latest PhotoCraft, with the embedding bridge rebased onto it

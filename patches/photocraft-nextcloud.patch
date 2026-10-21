@@ -1,22 +1,22 @@
 diff --git a/apps/photocraft-web/Cargo.toml b/apps/photocraft-web/Cargo.toml
-index 786165b5..6cea5dd8 100644
+index 4ecad80a..41ee997e 100644
 --- a/apps/photocraft-web/Cargo.toml
 +++ b/apps/photocraft-web/Cargo.toml
 @@ -34,7 +34,7 @@ rfd = { workspace = true }
  wasm-bindgen = "0.2"
  wasm-bindgen-futures = "0.4"
  js-sys = "0.3"
--web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator"] }
-+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator", "MessageEvent", "UrlSearchParams"] }
+-web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator"] }
++web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator", "MessageEvent", "UrlSearchParams"] }
  
  [dev-dependencies]
  serde_json = { workspace = true }
 diff --git a/apps/photocraft-web/src/host.rs b/apps/photocraft-web/src/host.rs
 new file mode 100644
-index 00000000..6e70aded
+index 00000000..4ea02c42
 --- /dev/null
 +++ b/apps/photocraft-web/src/host.rs
-@@ -0,0 +1,182 @@
+@@ -0,0 +1,185 @@
 +//! The `postMessage` bridge to a same-origin parent page (`?host=parent`), for pages that embed
 +//! PhotoCraft in an `<iframe>` (such as a Nextcloud app). Messages are plain objects with a `type`:
 +//!
@@ -88,6 +88,9 @@ index 00000000..6e70aded
 +        }));
 +        let bridge = self.clone();
 +        services.write = Some(Box::new(move |path: &str, bytes: &[u8]| bridge.post_save(path, bytes)));
++        // Unlike a browser download (#4962), what the parent is handed it stores, reporting a
++        // failure itself: a save to it counts as done.
++        services.write_unconfirmed = false;
 +    }
 +
 +    pub fn post_ready(&self) {
@@ -224,10 +227,10 @@ index 0802a02e..a9ea3f89 100644
  mod web;
  
 diff --git a/apps/photocraft-web/src/web.rs b/apps/photocraft-web/src/web.rs
-index eb350d17..f6a69c88 100644
+index 0bec8646..cb7d6405 100644
 --- a/apps/photocraft-web/src/web.rs
 +++ b/apps/photocraft-web/src/web.rs
-@@ -72,6 +72,10 @@ pub fn start() {
+@@ -74,6 +74,10 @@ pub fn start() {
              }
          };
          let pen_target = canvas.clone();
@@ -238,12 +241,12 @@ index eb350d17..f6a69c88 100644
          let result = eframe::WebRunner::new()
              .start(
                  canvas,
-@@ -83,7 +87,11 @@ pub fn start() {
-                     load_font_manifest(served.clone(), cc.egui_ctx.clone());
+@@ -87,7 +91,11 @@ pub fn start() {
                      let (session, warnings) = crate::preset_bridge::session(presets.clone());
                      preset_warnings.extend(warnings);
--                    let mut app = PhotocraftApp::new(session, services(inbox.clone()));
-+                    let mut services = services(inbox.clone());
+                     let drag = listen_drag(&pen_target);
+-                    let mut app = PhotocraftApp::new(session, services(inbox.clone(), place_inbox.clone(), drag_pos_service(pen_target.clone(), drag)));
++                    let mut services = services(inbox.clone(), place_inbox.clone(), drag_pos_service(pen_target.clone(), drag));
 +                    if let Some(bridge) = &app_bridge {
 +                        bridge.connect(&mut services, inbox.clone(), cc.egui_ctx.clone());
 +                    }
@@ -251,18 +254,18 @@ index eb350d17..f6a69c88 100644
                      if !preset_warnings.is_empty() {
                          photocraft_ui_egui::notices::post(&mut app, i18n::t("Some brush presets could not be loaded"), preset_warnings, true, None);
                      }
-@@ -96,11 +104,18 @@ pub fn start() {
+@@ -100,11 +108,18 @@ pub fn start() {
                          app.set_wgpu(rs);
                      }
                      let unsaved = Arc::new(AtomicBool::new(false));
 -                    guard_unload(unsaved.clone());
--                    Ok(Box::new(WebShell { app, inbox, unsaved, served, database, presets }))
+-                    Ok(Box::new(WebShell { app, inbox, place_inbox, unsaved, served, database, presets }))
 +                    if let Some(bridge) = &app_bridge {
 +                        bridge.post_ready();
 +                    } else {
 +                        guard_unload(unsaved.clone());
 +                    }
-+                    Ok(Box::new(WebShell { app, inbox, unsaved, served, database, presets, bridge: app_bridge }))
++                    Ok(Box::new(WebShell { app, inbox, place_inbox, unsaved, served, database, presets, bridge: app_bridge }))
                  }),
              )
              .await;
@@ -272,7 +275,7 @@ index eb350d17..f6a69c88 100644
          if let Some(el) = document.get_element_by_id("photocraft_loading") {
              match result {
                  Ok(()) => el.remove(),
-@@ -162,6 +177,10 @@ fn query() -> String {
+@@ -198,6 +213,10 @@ fn query() -> String {
      web_sys::window().and_then(|w| w.location().search().ok()).unwrap_or_default()
  }
  
@@ -283,7 +286,7 @@ index eb350d17..f6a69c88 100644
  /// Reads the served font manifest, if the host has one, and lists its families in the font menus.
  fn load_font_manifest(served: Served, ctx: egui::Context) {
      wasm_bindgen_futures::spawn_local(async move {
-@@ -228,6 +247,8 @@ struct WebShell {
+@@ -267,6 +286,8 @@ struct WebShell {
      served: Served,
      database: Option<web_sys::IdbDatabase>,
      presets: crate::preset_bridge::Bridge,
@@ -292,7 +295,7 @@ index eb350d17..f6a69c88 100644
  }
  
  impl WebShell {
-@@ -247,6 +268,9 @@ impl WebShell {
+@@ -286,6 +307,9 @@ impl WebShell {
              });
          }
          self.unsaved.store(self.app.has_unsaved_work() || self.presets.unsaved(), Ordering::Relaxed);
@@ -302,15 +305,3 @@ index eb350d17..f6a69c88 100644
      }
  
      /// Fetches the served families asked for (picked in a font menu, or needed by a layout) and
-diff --git a/crates/engine/src/presets/mod.rs b/crates/engine/src/presets/mod.rs
-index 03696291..81382b41 100644
---- a/crates/engine/src/presets/mod.rs
-+++ b/crates/engine/src/presets/mod.rs
-@@ -186,6 +186,7 @@ impl Session {
-             tool_presets: take(&mut m, "tool_presets"),
-             documents: take(&mut m, "documents"),
-             recent_documents: take(&mut m, "recent_documents"),
-+            export_presets: take(&mut m, "export_presets"),
-             custom_shapes: take(&mut m, "custom_shapes"),
-             layer_defaults: take(&mut m, "layer_defaults"),
-             swatches: take(&mut m, "swatches"),
