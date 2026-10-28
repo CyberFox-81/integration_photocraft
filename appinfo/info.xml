@@ -21,7 +21,7 @@ PhotoCraft runs entirely in your browser as WebAssembly. Files go only between y
 This is a community integration based on [PhotoCraft](https://github.com/storytold/photocraft) by the ArtCraft team, an open-source, Rust-native image editor. It embeds a build of PhotoCraft and is not made or endorsed by the ArtCraft team.
 
 **Requirements:** a browser with WebGPU or WebGL2, and a web server that serves `.wasm` files as `application/wasm` (Nextcloud's own Apache and nginx configurations do).]]></description>
-	<version>0.1.7</version>
+	<version>0.1.8</version>
 	<licence>agpl</licence>
 	<author mail="brittondcouchman@gmail.com" homepage="https://github.com/CyberFox-81">Britton Couchman</author>
 	<namespace>PhotoCraftIntegration</namespace>

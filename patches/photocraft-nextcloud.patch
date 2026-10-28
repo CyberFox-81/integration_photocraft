@@ -1,19 +1,19 @@
 diff --git a/apps/photocraft-web/Cargo.toml b/apps/photocraft-web/Cargo.toml
-index 4ecad80a..41ee997e 100644
+index 0176e0fe8..b1587d8bc 100644
 --- a/apps/photocraft-web/Cargo.toml
 +++ b/apps/photocraft-web/Cargo.toml
 @@ -34,7 +34,7 @@ rfd = { workspace = true }
  wasm-bindgen = "0.2"
  wasm-bindgen-futures = "0.4"
  js-sys = "0.3"
--web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator"] }
-+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "Navigator", "MessageEvent", "UrlSearchParams"] }
+-web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "RequestMode", "Navigator"] }
++web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "DomRect", "HtmlAnchorElement", "Blob", "BlobPropertyBag", "Url", "Location", "CssStyleDeclaration", "Storage", "Event", "EventTarget", "MouseEvent", "PointerEvent", "BeforeUnloadEvent", "AbortController", "AbortSignal", "DomException", "Response", "IdbFactory", "IdbOpenDbRequest", "IdbDatabase", "IdbRequest", "IdbTransaction", "IdbTransactionMode", "IdbObjectStore", "IdbCursor", "IdbCursorWithValue", "RequestInit", "RequestMode", "Navigator", "MessageEvent", "UrlSearchParams"] }
  
  [dev-dependencies]
  serde_json = { workspace = true }
 diff --git a/apps/photocraft-web/src/host.rs b/apps/photocraft-web/src/host.rs
 new file mode 100644
-index 00000000..4ea02c42
+index 000000000..4ea02c429
 --- /dev/null
 +++ b/apps/photocraft-web/src/host.rs
 @@ -0,0 +1,185 @@
@@ -203,7 +203,7 @@ index 00000000..4ea02c42
 +    }
 +}
 diff --git a/apps/photocraft-web/src/main.rs b/apps/photocraft-web/src/main.rs
-index 0802a02e..a9ea3f89 100644
+index 0802a02eb..a9ea3f891 100644
 --- a/apps/photocraft-web/src/main.rs
 +++ b/apps/photocraft-web/src/main.rs
 @@ -12,7 +12,9 @@
@@ -227,10 +227,10 @@ index 0802a02e..a9ea3f89 100644
  mod web;
  
 diff --git a/apps/photocraft-web/src/web.rs b/apps/photocraft-web/src/web.rs
-index 0bec8646..cb7d6405 100644
+index f82051dbf..f5c9fef88 100644
 --- a/apps/photocraft-web/src/web.rs
 +++ b/apps/photocraft-web/src/web.rs
-@@ -74,6 +74,10 @@ pub fn start() {
+@@ -75,6 +75,10 @@ pub fn start() {
              }
          };
          let pen_target = canvas.clone();
@@ -241,7 +241,7 @@ index 0bec8646..cb7d6405 100644
          let result = eframe::WebRunner::new()
              .start(
                  canvas,
-@@ -87,7 +91,11 @@ pub fn start() {
+@@ -89,7 +93,11 @@ pub fn start() {
                      let (session, warnings) = crate::preset_bridge::session(presets.clone());
                      preset_warnings.extend(warnings);
                      let drag = listen_drag(&pen_target);
@@ -254,7 +254,7 @@ index 0bec8646..cb7d6405 100644
                      if !preset_warnings.is_empty() {
                          photocraft_ui_egui::notices::post(&mut app, i18n::t("Some brush presets could not be loaded"), preset_warnings, true, None);
                      }
-@@ -100,11 +108,18 @@ pub fn start() {
+@@ -102,11 +110,18 @@ pub fn start() {
                          app.set_wgpu(rs);
                      }
                      let unsaved = Arc::new(AtomicBool::new(false));
@@ -275,7 +275,7 @@ index 0bec8646..cb7d6405 100644
          if let Some(el) = document.get_element_by_id("photocraft_loading") {
              match result {
                  Ok(()) => el.remove(),
-@@ -198,6 +213,10 @@ fn query() -> String {
+@@ -200,6 +215,10 @@ fn query() -> String {
      web_sys::window().and_then(|w| w.location().search().ok()).unwrap_or_default()
  }
  
@@ -286,7 +286,7 @@ index 0bec8646..cb7d6405 100644
  /// Reads the served font manifest, if the host has one, and lists its families in the font menus.
  fn load_font_manifest(served: Served, ctx: egui::Context) {
      wasm_bindgen_futures::spawn_local(async move {
-@@ -267,6 +286,8 @@ struct WebShell {
+@@ -270,6 +289,8 @@ struct WebShell {
      served: Served,
      database: Option<web_sys::IdbDatabase>,
      presets: crate::preset_bridge::Bridge,
@@ -295,7 +295,7 @@ index 0bec8646..cb7d6405 100644
  }
  
  impl WebShell {
-@@ -286,6 +307,9 @@ impl WebShell {
+@@ -289,6 +310,9 @@ impl WebShell {
              });
          }
          self.unsaved.store(self.app.has_unsaved_work() || self.presets.unsaved(), Ordering::Relaxed);
